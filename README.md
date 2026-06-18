@@ -10,6 +10,8 @@
 
 Azure Policy Drift Detector connects to Azure Resource Graph and Policy Insights using application credentials and compares resource configurations against active policy assignments. Entirely read-only, no data leaves your machine.
 
+Aligned with the [Microsoft Cloud Security Benchmark (MCSB)](https://learn.microsoft.com/en-us/security/benchmark/azure/overview) and designed for Azure Governance and compliance teams.
+
 ![Rust](https://img.shields.io/badge/Rust-1.78+-orange?logo=rust)
 ![Azure Policy](https://img.shields.io/badge/Azure%20Policy-blue?logo=microsoftazure)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?logo=windows)

@@ -21,6 +21,7 @@
 ## v0.3.0
 
 - Drift comparison mode (diff between two report snapshots)
+- Azure Monitor integration: push drift alerts to Log Analytics or Action Groups
 - Azure Policy initiative (regulatory compliance) breakdown
 - Policy assignment details and definition parameter inspection
 - Threshold-based exit codes for CI/CD pipeline integration
@@ -28,5 +29,6 @@
 ## v1.0.0
 
 - Stable CLI interface
-- Benchmark against Microsoft Cloud Security Benchmark (MCSB)
+- Full benchmark against Microsoft Cloud Security Benchmark (MCSB) policy set
+- Microsoft Defender for Cloud integration (export findings as security alerts)
 - Azure Lighthouse multi-tenant support
