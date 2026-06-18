@@ -1,0 +1,46 @@
+# Azure Policy Drift Detector: GitHub Actions template
+#
+# Copy this file to your repository at .github/workflows/policy-check.yml
+# and fill in the required secrets in your GitHub repository settings.
+#
+# Required secrets:
+#   AZURE_TENANT_ID
+#   AZURE_CLIENT_ID
+#   AZURE_CLIENT_SECRET
+#   AZURE_SUBSCRIPTION_ID
+
+name: Azure Policy Drift Check
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install apdd
+        run: |
+          cargo install --git https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector apdd-cli
+
+      - name: Run drift scan
+        env:
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        run: |
+          apdd export --format json --output drift-report.json
+          apdd export --format md --output drift-report.md
+
+      - name: Upload drift report
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: |
+            drift-report.json
+            drift-report.md
+          retention-days: 30

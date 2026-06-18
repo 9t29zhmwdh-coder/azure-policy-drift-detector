@@ -1,0 +1,52 @@
+{
+  "subscription_id": "00000000-0000-0000-0000-000000000001",
+  "scanned_at": "2026-06-18T10:00:00Z",
+  "total_resources": 214,
+  "compliant_count": 204,
+  "non_compliant_count": 8,
+  "exempt_count": 2,
+  "drifts": [
+    {
+      "resource_id": "/subscriptions/00000000/resourceGroups/rg-prod/providers/Microsoft.Compute/virtualMachines/vm-prod-001",
+      "resource_name": "vm-prod-001",
+      "resource_type": "microsoft.compute/virtualmachines",
+      "location": "westeurope",
+      "drift_type": "non_compliant_configuration",
+      "severity": "Critical",
+      "policy_name": "Enable network security group on subnet",
+      "description": "Resource 'vm-prod-001' is non-compliant with policy 'Enable network security group on subnet'.",
+      "remediation": "Review the policy definition and bring the resource configuration into compliance."
+    },
+    {
+      "resource_id": "/subscriptions/00000000/resourceGroups/rg-backup/providers/Microsoft.Storage/storageAccounts/storage-backup",
+      "resource_name": "storage-backup",
+      "resource_type": "microsoft.storage/storageaccounts",
+      "location": "northeurope",
+      "drift_type": "non_compliant_configuration",
+      "severity": "High",
+      "policy_name": "Require encryption in transit",
+      "description": "Resource 'storage-backup' is non-compliant with policy 'Require encryption in transit'.",
+      "remediation": "Enable HTTPS-only traffic on the storage account."
+    },
+    {
+      "resource_id": "/subscriptions/00000000/resourceGroups/rg-aks/providers/Microsoft.ContainerService/managedClusters/aks-cluster-eu",
+      "resource_name": "aks-cluster-eu",
+      "resource_type": "microsoft.containerservice/managedclusters",
+      "location": "westeurope",
+      "drift_type": "tag_mismatch",
+      "severity": "Medium",
+      "policy_name": "Require cost center tag",
+      "description": "Resource 'aks-cluster-eu' violates tagging policy 'Require cost center tag'.",
+      "remediation": "Apply the required tags using 'az tag update' or the Azure Portal."
+    }
+  ],
+  "summary": {
+    "critical_count": 1,
+    "high_count": 3,
+    "medium_count": 4,
+    "low_count": 0,
+    "informational_count": 2,
+    "non_compliant_resources": 8,
+    "exempt_resources": 2
+  }
+}
