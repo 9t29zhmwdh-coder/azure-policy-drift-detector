@@ -10,7 +10,7 @@
 
 Open a GitHub issue with the label `security`. Do not include subscription IDs, credentials, or resource data in the report.
 
-We will acknowledge receipt within 72 hours and aim to provide a fix within 14 days for confirmed vulnerabilities.
+I will acknowledge receipt within 72 hours and aim to provide a fix within 14 days for confirmed vulnerabilities.
 
 ## Security Design Principles
 
