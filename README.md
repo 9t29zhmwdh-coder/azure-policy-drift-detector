@@ -12,12 +12,7 @@ Azure Policy Drift Detector connects to Azure Resource Graph and Policy Insights
 
 Aligned with the [Microsoft Cloud Security Benchmark (MCSB)](https://learn.microsoft.com/en-us/security/benchmark/azure/overview) and designed for Azure Governance and compliance teams.
 
-![Rust](https://img.shields.io/badge/Rust-1.78+-orange?logo=rust)
-![Azure Policy](https://img.shields.io/badge/Azure%20Policy-blue?logo=microsoftazure)
-![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey?logo=windows)
-![License](https://img.shields.io/badge/License-MIT-green)
-[![Azure Ready](https://img.shields.io/badge/Azure-Resource%20Graph%20%7C%20Policy%20Insights-blue?logo=microsoftazure)](docs/azure_setup.md)
-[![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml)
+[![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions) ![Azure Ready](https://img.shields.io/badge/Azure-Ready-0078d4?logo=microsoftazure&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Linux_%7C_macOS_%7C_Windows-lightgrey) ![Rust](https://img.shields.io/badge/Rust-CE422B?logo=rust&logoColor=white) ![AI | Claude Code](https://img.shields.io/badge/AI-Claude_Code-black?logo=anthropic&logoColor=white) ![AI | Copilot](https://img.shields.io/badge/AI-Copilot-black?logo=github&logoColor=white)
 
 ---
 
@@ -147,4 +142,4 @@ Summary: 1 Critical, 3 High, 4 Medium, 0 Low
 
 ---
 
-**Author:** [Rafael Yilmaz](https://github.com/9t29zhmwdh-coder) · **Status:** Early Release · **Last Updated:** June 2026
+**Author:** [Rafael Yilmaz](https://github.com/9t29zhmwdh-coder) · **Status:** Active · v0.1.0 · **License:** MIT
