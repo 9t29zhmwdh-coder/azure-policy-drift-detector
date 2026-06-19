@@ -12,12 +12,7 @@ Der Azure Policy Drift Detector verbindet sich per Anwendungsberechtigungen mit 
 
 Ausgerichtet am [Microsoft Cloud Security Benchmark (MCSB)](https://learn.microsoft.com/de-de/security/benchmark/azure/overview) und konzipiert fuer Azure Governance und Compliance-Teams.
 
-![Rust](https://img.shields.io/badge/Rust-1.78+-orange?logo=rust)
-![Azure Policy](https://img.shields.io/badge/Azure%20Policy-blue?logo=microsoftazure)
-![Plattform](https://img.shields.io/badge/Plattform-Windows%20%7C%20Linux-lightgrey?logo=windows)
-![Lizenz](https://img.shields.io/badge/Lizenz-MIT-green)
-[![Azure Ready](https://img.shields.io/badge/Azure-Resource%20Graph%20%7C%20Policy%20Insights-blue?logo=microsoftazure)](docs/azure_setup.md)
-[![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml)
+[![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions) ![Azure Ready](https://img.shields.io/badge/Azure-Ready-0078d4?logo=microsoftazure&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Linux_%7C_macOS_%7C_Windows-lightgrey) ![Rust](https://img.shields.io/badge/Rust-CE422B?logo=rust&logoColor=white) ![AI | Claude Code](https://img.shields.io/badge/AI-Claude_Code-black?logo=anthropic&logoColor=white) ![AI | Copilot](https://img.shields.io/badge/AI-Copilot-black?logo=github&logoColor=white)
 
 ---
 
@@ -119,4 +114,4 @@ Die `.env`-Datei ist in `.gitignore` aufgeführt. Zugangsdaten werden nie commit
 
 ---
 
-**Autor:** [Rafael Yilmaz](https://github.com/9t29zhmwdh-coder) · **Status:** Early Release · **Zuletzt aktualisiert:** Juni 2026
+**Autor:** [Rafael Yilmaz](https://github.com/9t29zhmwdh-coder) · **Status:** Active · v0.1.0 · **Lizenz:** MIT
