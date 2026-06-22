@@ -12,8 +12,9 @@
 name: Azure Policy Drift Check
 
 on:
-  schedule:
-    - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
+  # Uncomment the schedule below when deploying to your own repository:
+  # schedule:
+  #   - cron: '0 6 * * 1'  # Every Monday at 06:00 UTC
   workflow_dispatch:
 
 jobs:
