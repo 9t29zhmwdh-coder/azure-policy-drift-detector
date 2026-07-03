@@ -142,3 +142,87 @@ pub struct ComplianceReport {
     pub drifts: Vec<DriftResult>,
     pub summary: ComplianceSummary,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn make_drift(drift_type: DriftType, severity: Severity) -> DriftResult {
+        DriftResult {
+            resource_id: "/sub/1/res/test".into(),
+            resource_name: "test-resource".into(),
+            resource_type: "Microsoft.Compute/virtualMachines".into(),
+            location: "westeurope".into(),
+            drift_type,
+            severity,
+            policy_name: "Test Policy".into(),
+            description: "Test description".into(),
+            remediation: "Test remediation".into(),
+        }
+    }
+
+    #[test]
+    fn compliance_summary_counts_correctly() {
+        let drifts = vec![
+            make_drift(DriftType::NonCompliantConfiguration, Severity::Critical),
+            make_drift(DriftType::TagMismatch, Severity::Medium),
+            make_drift(DriftType::MissingRequiredTag, Severity::High),
+            make_drift(DriftType::PolicyExempt, Severity::Informational),
+        ];
+        let summary = ComplianceSummary::from_drifts(&drifts);
+        assert_eq!(summary.critical_count, 1);
+        assert_eq!(summary.high_count, 1);
+        assert_eq!(summary.medium_count, 1);
+        assert_eq!(summary.informational_count, 1);
+        assert_eq!(summary.non_compliant_resources, 3);
+        assert_eq!(summary.exempt_resources, 1);
+    }
+
+    #[test]
+    fn compliance_summary_empty_drifts_returns_zeros() {
+        let summary = ComplianceSummary::from_drifts(&[]);
+        assert_eq!(summary.critical_count, 0);
+        assert_eq!(summary.non_compliant_resources, 0);
+    }
+
+    #[test]
+    fn compliance_state_display() {
+        assert_eq!(ComplianceState::Compliant.to_string(), "Compliant");
+        assert_eq!(ComplianceState::NonCompliant.to_string(), "NonCompliant");
+        assert_eq!(ComplianceState::Exempt.to_string(), "Exempt");
+        assert_eq!(ComplianceState::Unknown.to_string(), "Unknown");
+    }
+
+    #[test]
+    fn severity_display_uppercase() {
+        assert_eq!(Severity::Critical.to_string(), "CRITICAL");
+        assert_eq!(Severity::High.to_string(), "HIGH");
+        assert_eq!(Severity::Medium.to_string(), "MEDIUM");
+        assert_eq!(Severity::Low.to_string(), "LOW");
+        assert_eq!(Severity::Informational.to_string(), "INFO");
+    }
+
+    #[test]
+    fn drift_type_display() {
+        assert_eq!(DriftType::NonCompliantConfiguration.to_string(), "Non-Compliant Configuration");
+        assert_eq!(DriftType::TagMismatch.to_string(), "Tag Mismatch");
+        assert_eq!(DriftType::MissingRequiredTag.to_string(), "Missing Required Tag");
+        assert_eq!(DriftType::PolicyExempt.to_string(), "Policy Exempt");
+    }
+
+    #[test]
+    fn azure_resource_can_be_serialized() {
+        let resource = AzureResource {
+            id: "/sub/1/res/test".into(),
+            name: "test".into(),
+            resource_type: "Microsoft.Compute/virtualMachines".into(),
+            location: "westeurope".into(),
+            subscription_id: "sub-1".into(),
+            tags: HashMap::from([("env".into(), "prod".into())]),
+        };
+        let json = serde_json::to_string(&resource).unwrap();
+        let deserialized: AzureResource = serde_json::from_str(&json).unwrap();
+        assert_eq!(deserialized.name, "test");
+        assert_eq!(deserialized.tags["env"], "prod");
+    }
+}
