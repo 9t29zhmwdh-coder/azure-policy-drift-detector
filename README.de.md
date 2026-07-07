@@ -14,7 +14,13 @@ Ausgerichtet am [Microsoft Cloud Security Benchmark (MCSB)](https://learn.micros
 
 [![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions) ![Azure Ready](https://img.shields.io/badge/Azure-Ready-0078d4?logo=microsoftazure&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Ubuntu-lightgrey) ![Rust](https://img.shields.io/badge/Rust-CE422B?logo=rust&logoColor=white) ![AI | Claude Code](https://img.shields.io/badge/AI-Claude_Code-black?logo=anthropic&logoColor=white) ![AI | Copilot](https://img.shields.io/badge/AI-Copilot-black?logo=github&logoColor=white) [![Release](https://img.shields.io/github/v/release/9t29zhmwdh-coder/azure-policy-drift-detector?color=3F8E7E)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/releases) [![License](https://img.shields.io/github/license/9t29zhmwdh-coder/azure-policy-drift-detector?color=lightgrey)](LICENSE)
 
+> **So läuft das:** Das ist ein Kommandozeilen-Tool, keine Desktop-App und kein Server. `apdd` läuft pro Befehl einmal durch und beendet sich; es gibt keinen Installer und keinen Hintergrundprozess. Mit `apdd demo` siehst du es gegen eine eingebaute synthetische Subscription laufen, ganz ohne Azure-Zugangsdaten.
+
+![azure-policy-drift-detector](docs/screenshot.png)
+
 ---
+
+**In der Praxis:** Du bekommst eine CLI, die sich read-only mit deiner Subscription verbindet und eine priorisierte Liste an Policy-Drift-Befunden direkt ins Terminal ausgibt, oder als JSON/Markdown für Tickets und Audits exportiert.
 
 ## Funktionen
 
@@ -60,11 +66,13 @@ Beide Rollen sind read-only. Schreibberechtigungen werden nicht benötigt und ni
 ```bash
 git clone https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector
 cd azure-policy-drift-detector
+cargo build --release
+
+# Ohne Zugangsdaten testen, gegen eine eingebaute synthetische Subscription
+./target/release/apdd demo
 
 cp .env.example .env
-# Zugangsdaten eintragen
-
-cargo build --release
+# Zugangsdaten für eine echte Subscription eintragen
 
 # Drift-Scan durchführen
 ./target/release/apdd scan
@@ -81,12 +89,18 @@ cargo build --release
 
 ---
 
+## Deinstallation / Datenbereinigung
+
+Lösche das `target/` Build-Verzeichnis, deine lokale `.env`-Datei (enthält deinen Client-Secret) und exportierte Report-Dateien (`bericht.md`, `bericht.json`). Das Tool ist read-only gegenüber Azure und schreibt nie etwas in deine Subscription zurück.
+
+---
+
 ## Konfiguration
 
 ```env
 AZURE_TENANT_ID=deine-mandanten-id
 AZURE_CLIENT_ID=deine-client-id
-AZURE_CLIENT_SECRET=dein-clientschluessel
+AZURE_CLIENT_SECRET=dein-clientschlüssel
 AZURE_SUBSCRIPTION_ID=deine-subscription-id
 ```
 

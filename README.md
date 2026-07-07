@@ -14,7 +14,13 @@ Aligned with the [Microsoft Cloud Security Benchmark (MCSB)](https://learn.micro
 
 [![CI](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions/workflows/ci.yml/badge.svg)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/actions) ![Azure Ready](https://img.shields.io/badge/Azure-Ready-0078d4?logo=microsoftazure&logoColor=white) ![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Ubuntu-lightgrey) ![Rust](https://img.shields.io/badge/Rust-CE422B?logo=rust&logoColor=white) ![AI | Claude Code](https://img.shields.io/badge/AI-Claude_Code-black?logo=anthropic&logoColor=white) ![AI | Copilot](https://img.shields.io/badge/AI-Copilot-black?logo=github&logoColor=white) [![Release](https://img.shields.io/github/v/release/9t29zhmwdh-coder/azure-policy-drift-detector?color=3F8E7E)](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/releases) [![License](https://img.shields.io/github/license/9t29zhmwdh-coder/azure-policy-drift-detector?color=lightgrey)](LICENSE)
 
+> **How it runs:** This is a command-line tool, not a desktop app and not a server. `apdd` runs once per command and exits; there is no installer and no background process. Run `apdd demo` to see it work against a built-in synthetic subscription, no Azure credentials needed.
+
+![azure-policy-drift-detector](docs/screenshot.png)
+
 ---
+
+**In practice:** you get a CLI that connects to your subscription read-only and prints a prioritized list of policy drift findings straight to your terminal, or exports them as JSON/Markdown for tickets and audits.
 
 ## Features
 
@@ -61,11 +67,13 @@ Both roles are read-only. No write permissions are required or used.
 ```bash
 git clone https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector
 cd azure-policy-drift-detector
+cargo build --release
+
+# Try it without any credentials, against a built-in synthetic subscription
+./target/release/apdd demo
 
 cp .env.example .env
-# Fill in your credentials
-
-cargo build --release
+# Fill in your credentials for a real subscription
 
 # Scan for drift findings
 ./target/release/apdd scan
@@ -79,6 +87,12 @@ cargo build --release
 # Export as JSON
 ./target/release/apdd export --format json --output report.json
 ```
+
+---
+
+## Uninstall / Cleanup
+
+Delete the `target/` build directory, your local `.env` file (contains your client secret), and any exported report files (`report.md`, `report.json`). The tool is read-only against Azure and never writes anything back to your subscription.
 
 ---
 
