@@ -62,6 +62,16 @@ Both roles are read-only. No write permissions are required or used.
 
 ---
 
+## Requirements
+
+- Rust 1.78+
+- Azure subscription with an app registration
+- Network access to `login.microsoftonline.com` and `management.azure.com`
+
+> 🌱 New here? → [Step-by-step guide for beginners](GETTING_STARTED.md)
+
+---
+
 ## Quick Start
 
 ```bash
@@ -145,14 +155,6 @@ Resources scanned: 214  Non-compliant: 8  Exempt: 2  Drift findings: 10
 
 Summary: 1 Critical, 3 High, 4 Medium, 0 Low
 ```
-
----
-
-## Requirements
-
-- Rust 1.78+
-- Azure subscription with an app registration
-- Network access to `login.microsoftonline.com` and `management.azure.com`
 
 ---
 
