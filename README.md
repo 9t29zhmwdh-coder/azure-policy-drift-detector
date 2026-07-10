@@ -20,6 +20,10 @@ Aligned with the [Microsoft Cloud Security Benchmark (MCSB)](https://learn.micro
 
 ---
 
+> 🌱 New here? → [Step-by-step guide for beginners](GETTING_STARTED.md)
+
+---
+
 **In practice:** you get a CLI that connects to your subscription read-only and prints a prioritized list of policy drift findings straight to your terminal, or exports them as JSON/Markdown for tickets and audits.
 
 ## Features
@@ -67,8 +71,6 @@ Both roles are read-only. No write permissions are required or used.
 - Rust 1.78+
 - Azure subscription with an app registration
 - Network access to `login.microsoftonline.com` and `management.azure.com`
-
-> 🌱 New here? → [Step-by-step guide for beginners](GETTING_STARTED.md)
 
 ---
 

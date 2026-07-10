@@ -20,6 +20,10 @@ Ausgerichtet am [Microsoft Cloud Security Benchmark (MCSB)](https://learn.micros
 
 ---
 
+> 🌱 Neu hier? → [Schritt-für-Schritt-Anleitung für Einsteiger](GETTING_STARTED.md)
+
+---
+
 **In der Praxis:** Du bekommst eine CLI, die sich read-only mit deiner Subscription verbindet und eine priorisierte Liste an Policy-Drift-Befunden direkt ins Terminal ausgibt, oder als JSON/Markdown für Tickets und Audits exportiert.
 
 ## Funktionen
