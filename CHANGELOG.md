@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.3] (2026-07-10)
+
+### Fixed
+
+- Changed the language-switch link from a blockquote to plain text
+
 ## [0.1.2] (2026-07-10)
 
 ### Changed

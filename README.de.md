@@ -4,7 +4,7 @@
   <h1>Azure Policy Drift Detector</h1>
 </div>
 
-> 🇬🇧 [English Version](README.md)
+🇬🇧 [English Version](README.md)
 
 **Read-only Rust CLI zur Erkennung von Azure Policy Drift in Subscriptions, Priorisierung nicht-konformer Ressourcen und Generierung von Massnahmenberichten.**
 
