@@ -52,6 +52,8 @@ Registriere eine Anwendung in Entra ID und weise folgende Rollen auf Subscriptio
 
 Beide Rollen sind read-only. Schreibberechtigungen werden nicht benötigt und nicht verwendet.
 
+Für `--management-group`-Scans die beiden Rollen auf **Management-Group-Ebene** statt auf einzelnen Subscriptions zuweisen, damit sie für alle darunterliegenden Subscriptions gelten.
+
 ---
 
 ## App-Registrierung einrichten
@@ -89,7 +91,14 @@ cp .env.example .env
 
 # Export als JSON
 ./target/release/apdd export --format json --output bericht.json
+
+# Alle Subscriptions unter einer Management Group in einem Lauf scannen
+./target/release/apdd scan --management-group mg-contoso-prod
 ```
+
+## Management-Group-Scope
+
+Mit `--management-group <id>` (oder `AZURE_MANAGEMENT_GROUP_ID`) werden alle Subscriptions unter dieser Management Group in einem einzigen Lauf gescannt, statt eine Subscription nach der anderen. `AZURE_SUBSCRIPTION_ID` wird in diesem Modus nicht benötigt. Der Bericht enthält eine Aufschlüsselung pro Subscription (Anzahl Ressourcen, nicht konform, ausgenommen) zusätzlich zu den Gesamt-Findings, damit ein Scan über viele Subscriptions lesbar bleibt statt zu einer unübersichtlichen Gesamtliste zu werden. Der Service Principal braucht Reader-Zugriff auf Management-Group-Ebene, nicht nur auf einzelnen Subscriptions, siehe [Benötigte Azure RBAC Rollen](#benötigte-azure-rbac-rollen).
 
 ---
 

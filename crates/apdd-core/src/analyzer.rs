@@ -4,7 +4,7 @@ use chrono::Utc;
 
 use crate::models::{
     AzureResource, ComplianceReport, ComplianceSummary, ComplianceState, DriftResult, DriftType,
-    PolicyState, Severity,
+    PolicyState, Scope, Severity, SubscriptionBreakdown,
 };
 
 const SECURITY_POLICY_KEYWORDS: &[&str] = &[
@@ -121,7 +121,7 @@ pub fn prioritize_by_risk(mut drifts: Vec<DriftResult>) -> Vec<DriftResult> {
 }
 
 pub fn build_report(
-    subscription_id: String,
+    scope: &Scope,
     resources: &[AzureResource],
     policy_states: &[PolicyState],
 ) -> ComplianceReport {
@@ -143,9 +143,10 @@ pub fn build_report(
         .count();
 
     let summary = ComplianceSummary::from_drifts(&drifts);
+    let by_subscription = subscription_breakdown(resources, policy_states);
 
     ComplianceReport {
-        subscription_id,
+        scope: scope.label(),
         scanned_at: Utc::now(),
         total_resources: resources.len(),
         compliant_count,
@@ -153,7 +154,51 @@ pub fn build_report(
         exempt_count,
         drifts,
         summary,
+        by_subscription,
     }
+}
+
+/// Rolls resources and policy states up per subscription. A Management
+/// Group scan touches many subscriptions in one report; this is what makes
+/// that actually useful instead of just a mixed, undifferentiated list.
+fn subscription_breakdown(
+    resources: &[AzureResource],
+    policy_states: &[PolicyState],
+) -> Vec<SubscriptionBreakdown> {
+    let resource_sub: HashMap<&str, &str> = resources
+        .iter()
+        .map(|r| (r.id.as_str(), r.subscription_id.as_str()))
+        .collect();
+
+    let mut breakdown: HashMap<&str, SubscriptionBreakdown> = HashMap::new();
+    for resource in resources {
+        let entry = breakdown
+            .entry(resource.subscription_id.as_str())
+            .or_insert_with(|| SubscriptionBreakdown {
+                subscription_id: resource.subscription_id.clone(),
+                ..Default::default()
+            });
+        entry.total_resources += 1;
+    }
+
+    for state in policy_states {
+        let Some(sub_id) = resource_sub.get(state.resource_id.as_str()) else {
+            continue;
+        };
+        let entry = breakdown.entry(sub_id).or_insert_with(|| SubscriptionBreakdown {
+            subscription_id: sub_id.to_string(),
+            ..Default::default()
+        });
+        match state.compliance_state {
+            ComplianceState::NonCompliant => entry.non_compliant_count += 1,
+            ComplianceState::Exempt => entry.exempt_count += 1,
+            _ => {}
+        }
+    }
+
+    let mut result: Vec<SubscriptionBreakdown> = breakdown.into_values().collect();
+    result.sort_by(|a, b| a.subscription_id.cmp(&b.subscription_id));
+    result
 }
 
 #[cfg(test)]
@@ -218,6 +263,55 @@ mod tests {
         )];
         let drifts = detect_drift(&resources, &states);
         assert_eq!(drifts[0].severity, Severity::Critical);
+    }
+
+    #[test]
+    fn build_report_labels_subscription_scope() {
+        let resources = vec![make_resource("/subscriptions/sub-a/res/vm1", "vm1")];
+        let scope = Scope::Subscription("sub-a".to_string());
+        let report = build_report(&scope, &resources, &[]);
+        assert_eq!(report.scope, "subscription:sub-a");
+        assert_eq!(report.by_subscription.len(), 1);
+        assert_eq!(report.by_subscription[0].subscription_id, "sub-001"); // from make_resource's fixed sub id
+    }
+
+    #[test]
+    fn build_report_labels_management_group_scope() {
+        let scope = Scope::ManagementGroup("mg-contoso".to_string());
+        let report = build_report(&scope, &[], &[]);
+        assert_eq!(report.scope, "management-group:mg-contoso");
+    }
+
+    #[test]
+    fn subscription_breakdown_splits_by_subscription_and_counts_per_sub() {
+        let resources = vec![
+            AzureResource {
+                id: "/res/a".into(), name: "a".into(), resource_type: "t".into(),
+                location: "l".into(), subscription_id: "sub-a".into(), tags: Default::default(),
+            },
+            AzureResource {
+                id: "/res/b".into(), name: "b".into(), resource_type: "t".into(),
+                location: "l".into(), subscription_id: "sub-b".into(), tags: Default::default(),
+            },
+            AzureResource {
+                id: "/res/c".into(), name: "c".into(), resource_type: "t".into(),
+                location: "l".into(), subscription_id: "sub-b".into(), tags: Default::default(),
+            },
+        ];
+        let policy_states = vec![
+            make_policy_state("/res/a", "policy-1", ComplianceState::NonCompliant),
+            make_policy_state("/res/b", "policy-1", ComplianceState::Exempt),
+            make_policy_state("/res/c", "policy-1", ComplianceState::Compliant),
+        ];
+        let breakdown = subscription_breakdown(&resources, &policy_states);
+        assert_eq!(breakdown.len(), 2);
+        let sub_a = breakdown.iter().find(|s| s.subscription_id == "sub-a").unwrap();
+        assert_eq!(sub_a.total_resources, 1);
+        assert_eq!(sub_a.non_compliant_count, 1);
+        let sub_b = breakdown.iter().find(|s| s.subscription_id == "sub-b").unwrap();
+        assert_eq!(sub_b.total_resources, 2);
+        assert_eq!(sub_b.exempt_count, 1);
+        assert_eq!(sub_b.non_compliant_count, 0);
     }
 
     #[test]

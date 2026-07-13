@@ -52,6 +52,8 @@ Register an application in Entra ID and assign the following roles at subscripti
 
 Both roles are read-only. No write permissions are required or used.
 
+For `--management-group` scans, assign both roles at the **Management Group** scope instead of on individual subscriptions, so they apply to every subscription underneath it.
+
 ---
 
 ## App Registration Setup
@@ -98,7 +100,14 @@ cp .env.example .env
 
 # Export as JSON
 ./target/release/apdd export --format json --output report.json
+
+# Scan every subscription under a Management Group in one run
+./target/release/apdd scan --management-group mg-contoso-prod
 ```
+
+## Management Group Scope
+
+Pass `--management-group <id>` (or set `AZURE_MANAGEMENT_GROUP_ID`) to scan every subscription under that Management Group in a single run, instead of one subscription at a time. `AZURE_SUBSCRIPTION_ID` is not needed in this mode. The report includes a per-subscription breakdown (resource count, non-compliant count, exempt count) alongside the aggregate findings, so a scan across many subscriptions stays readable instead of turning into one undifferentiated list. The service principal needs Reader access at the Management Group scope, not just on individual subscriptions, see [Required Azure RBAC Roles](#required-azure-rbac-roles).
 
 ---
 

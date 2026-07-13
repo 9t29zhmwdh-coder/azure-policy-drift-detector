@@ -3,21 +3,26 @@
 //! Set AZURE_TENANT_ID, AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, AZURE_SUBSCRIPTION_ID.
 //! cargo run --example scan_subscription
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use apdd_azure::{auth::AzureClient, policy_insights, resource_graph};
-use apdd_core::analyzer;
+use apdd_core::{analyzer, models::Scope};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
 
     let client = AzureClient::from_env()?;
-    let subscription_id = client.subscription_id.clone();
+    let scope = Scope::Subscription(
+        client
+            .subscription_id
+            .clone()
+            .ok_or_else(|| anyhow!("AZURE_SUBSCRIPTION_ID not set"))?,
+    );
 
-    println!("Scanning subscription {}...", subscription_id);
+    println!("Scanning {}...", scope.label());
 
-    let resources = resource_graph::query_resources(&client, None).await?;
-    let policy_states = policy_insights::query_policy_states(&client).await?;
+    let resources = resource_graph::query_resources(&client, None, &scope).await?;
+    let policy_states = policy_insights::query_policy_states(&client, &scope).await?;
 
     println!(
         "Resources: {}  Policy states: {}",
@@ -25,7 +30,7 @@ async fn main() -> Result<()> {
         policy_states.len()
     );
 
-    let report = analyzer::build_report(subscription_id, &resources, &policy_states);
+    let report = analyzer::build_report(&scope, &resources, &policy_states);
 
     println!(
         "\nFindings: {} Critical, {} High, {} Medium, {} Low",

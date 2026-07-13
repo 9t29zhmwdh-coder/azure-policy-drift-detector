@@ -2,6 +2,26 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+/// What a scan covers: either one subscription, or every subscription under
+/// a Management Group. Resource Graph and Policy Insights each have their
+/// own way of expressing "management group scope"; see apdd-azure for that.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub enum Scope {
+    Subscription(String),
+    ManagementGroup(String),
+}
+
+impl Scope {
+    /// Human-readable label stored on the report, e.g. "subscription:abc" or
+    /// "management-group:contoso-prod".
+    pub fn label(&self) -> String {
+        match self {
+            Scope::Subscription(id) => format!("subscription:{id}"),
+            Scope::ManagementGroup(id) => format!("management-group:{id}"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AzureResource {
     pub id: String,
@@ -131,9 +151,20 @@ impl ComplianceSummary {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct SubscriptionBreakdown {
+    pub subscription_id: String,
+    pub total_resources: usize,
+    pub non_compliant_count: usize,
+    pub exempt_count: usize,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ComplianceReport {
-    pub subscription_id: String,
+    /// Was this a single-subscription scan or a Management Group scan;
+    /// see `Scope::label`. Kept as a plain string on the report itself so
+    /// old JSON exports and this field's shape stay simple to consume.
+    pub scope: String,
     pub scanned_at: DateTime<Utc>,
     pub total_resources: usize,
     pub compliant_count: usize,
@@ -141,6 +172,9 @@ pub struct ComplianceReport {
     pub exempt_count: usize,
     pub drifts: Vec<DriftResult>,
     pub summary: ComplianceSummary,
+    /// Per-subscription rollup. Has one entry for a single-subscription
+    /// scan too, so callers don't need to special-case scope kinds.
+    pub by_subscription: Vec<SubscriptionBreakdown>,
 }
 
 #[cfg(test)]

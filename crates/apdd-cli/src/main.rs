@@ -1,18 +1,23 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
 use apdd_azure::{auth::AzureClient, policy_insights, resource_graph};
-use apdd_core::{analyzer, report};
+use apdd_core::{analyzer, models::Scope, report};
 use tabled::{Table, Tabled};
 use tracing::info;
 
 #[derive(Parser)]
 #[command(
     name = "apdd",
-    version = "0.1.0",
+    version,
     author = "RayStudio",
     about = "Azure Policy Drift Detector: read-only Azure Policy compliance analysis"
 )]
 struct Cli {
+    /// Scan every subscription under this Management Group instead of a
+    /// single subscription. Overrides AZURE_SUBSCRIPTION_ID when set.
+    #[arg(long, env = "AZURE_MANAGEMENT_GROUP_ID")]
+    management_group: Option<String>,
+
     #[command(subcommand)]
     command: Command,
 }
@@ -50,6 +55,18 @@ struct DriftRow {
     policy: String,
 }
 
+#[derive(Tabled)]
+struct SubscriptionRow {
+    #[tabled(rename = "Subscription")]
+    subscription: String,
+    #[tabled(rename = "Resources")]
+    resources: usize,
+    #[tabled(rename = "Non-Compliant")]
+    non_compliant: usize,
+    #[tabled(rename = "Exempt")]
+    exempt: usize,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
@@ -68,13 +85,21 @@ async fn main() -> Result<()> {
     }
 
     let client = AzureClient::from_env()?;
-    let subscription_id = client.subscription_id.clone();
+    let scope = match cli.management_group {
+        Some(mg_id) => Scope::ManagementGroup(mg_id),
+        None => Scope::Subscription(
+            client
+                .subscription_id
+                .clone()
+                .ok_or_else(|| anyhow!("set AZURE_SUBSCRIPTION_ID, or pass --management-group"))?,
+        ),
+    };
 
     match cli.command {
         Command::Scan { min_severity } => {
-            info!("Scanning subscription {}...", subscription_id);
-            let (resources, policy_states) = fetch_all(&client).await?;
-            let report = analyzer::build_report(subscription_id, &resources, &policy_states);
+            info!("Scanning {}...", scope.label());
+            let (resources, policy_states) = fetch_all(&client, &scope).await?;
+            let report = analyzer::build_report(&scope, &resources, &policy_states);
 
             println!("\n=== Azure Policy Drift Detector ===\n");
             println!(
@@ -114,13 +139,27 @@ async fn main() -> Result<()> {
                 report.summary.medium_count,
                 report.summary.low_count,
             );
+
+            if report.by_subscription.len() > 1 {
+                println!("\nBy subscription:");
+                let sub_rows: Vec<SubscriptionRow> = report
+                    .by_subscription
+                    .iter()
+                    .map(|s| SubscriptionRow {
+                        subscription: s.subscription_id.clone(),
+                        resources: s.total_resources,
+                        non_compliant: s.non_compliant_count,
+                        exempt: s.exempt_count,
+                    })
+                    .collect();
+                println!("{}", Table::new(sub_rows));
+            }
         }
 
         Command::Export { format, output } => {
-            info!("Exporting compliance report for subscription {}...", subscription_id);
-            let (resources, policy_states) = fetch_all(&client).await?;
-            let compliance_report =
-                analyzer::build_report(subscription_id, &resources, &policy_states);
+            info!("Exporting compliance report for {}...", scope.label());
+            let (resources, policy_states) = fetch_all(&client, &scope).await?;
+            let compliance_report = analyzer::build_report(&scope, &resources, &policy_states);
 
             let content = match format.as_str() {
                 "md" => report::to_markdown(&compliance_report),
@@ -191,7 +230,8 @@ fn run_demo() {
         },
     ];
 
-    let report = analyzer::build_report("demo-subscription".to_string(), &resources, &policy_states);
+    let demo_scope = apdd_core::models::Scope::Subscription("demo-subscription".to_string());
+    let report = analyzer::build_report(&demo_scope, &resources, &policy_states);
 
     println!("\n=== Azure Policy Drift Detector (demo, synthetic data) ===\n");
     println!(
@@ -229,12 +269,13 @@ fn run_demo() {
 
 async fn fetch_all(
     client: &AzureClient,
+    scope: &Scope,
 ) -> Result<(
     Vec<apdd_core::models::AzureResource>,
     Vec<apdd_core::models::PolicyState>,
 )> {
-    let resources = resource_graph::query_resources(client, None).await?;
-    let policy_states = policy_insights::query_policy_states(client).await?;
+    let resources = resource_graph::query_resources(client, None, scope).await?;
+    let policy_states = policy_insights::query_policy_states(client, scope).await?;
     Ok((resources, policy_states))
 }
 
