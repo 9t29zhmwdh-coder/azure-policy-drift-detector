@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0] (2026-07-13)
+
+### Added
+
+- Azure Lighthouse multi-tenant support: `apdd scan --subscriptions <id1,id2,...>` (or `AZURE_SUBSCRIPTION_IDS`) scans an explicit list of subscriptions, including ones delegated from other tenants via Lighthouse. A single client-credentials token from the managing tenant already covers every delegated subscription; no per-tenant login step is needed. `--management-group` and `--subscriptions` are mutually exclusive.
+- This completes both explicit blockers in the Dual-Licensing Readiness assessment (Management Group scope in 0.2.0, Lighthouse multi-tenant here).
+
+### Fixed
+
+- `--management-group` (and the new `--subscriptions`) now work when passed after the subcommand (`apdd scan --management-group ...`), matching the README's documented usage. Previously, since neither flag was marked `global`, clap only accepted them before the subcommand (`apdd --management-group ... scan`), which was never documented and not what anyone would expect.
+
 ## [0.2.0] (2026-07-13)
 
 ### Added

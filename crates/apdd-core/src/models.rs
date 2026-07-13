@@ -2,21 +2,31 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// What a scan covers: either one subscription, or every subscription under
-/// a Management Group. Resource Graph and Policy Insights each have their
-/// own way of expressing "management group scope"; see apdd-azure for that.
+/// What a scan covers.
+///
+/// `Subscriptions` is what makes Azure Lighthouse multi-tenant scanning
+/// work: Lighthouse delegates RBAC on customer-tenant subscriptions to a
+/// service principal in the managing tenant, so a single client-credentials
+/// token from that one tenant is already authorized against every
+/// delegated subscription, regardless of which tenant it actually lives
+/// in. There is no separate "switch tenant" step; scanning several tenants
+/// at once is just passing several subscription IDs (Resource Graph
+/// accepts a batch of subscriptions natively; Policy Insights doesn't, so
+/// apdd-azure loops over them there).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Scope {
     Subscription(String),
+    Subscriptions(Vec<String>),
     ManagementGroup(String),
 }
 
 impl Scope {
-    /// Human-readable label stored on the report, e.g. "subscription:abc" or
-    /// "management-group:contoso-prod".
+    /// Human-readable label stored on the report, e.g. "subscription:abc",
+    /// "subscriptions:abc,def" or "management-group:contoso-prod".
     pub fn label(&self) -> String {
         match self {
             Scope::Subscription(id) => format!("subscription:{id}"),
+            Scope::Subscriptions(ids) => format!("subscriptions:{}", ids.join(",")),
             Scope::ManagementGroup(id) => format!("management-group:{id}"),
         }
     }
