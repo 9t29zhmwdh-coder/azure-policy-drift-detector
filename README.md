@@ -103,11 +103,18 @@ cp .env.example .env
 
 # Scan every subscription under a Management Group in one run
 ./target/release/apdd scan --management-group mg-contoso-prod
+
+# Azure Lighthouse: scan specific subscriptions delegated from other tenants
+./target/release/apdd scan --subscriptions sub-customer-a,sub-customer-b
 ```
 
 ## Management Group Scope
 
 Pass `--management-group <id>` (or set `AZURE_MANAGEMENT_GROUP_ID`) to scan every subscription under that Management Group in a single run, instead of one subscription at a time. `AZURE_SUBSCRIPTION_ID` is not needed in this mode. The report includes a per-subscription breakdown (resource count, non-compliant count, exempt count) alongside the aggregate findings, so a scan across many subscriptions stays readable instead of turning into one undifferentiated list. The service principal needs Reader access at the Management Group scope, not just on individual subscriptions, see [Required Azure RBAC Roles](#required-azure-rbac-roles).
+
+## Azure Lighthouse Multi-Tenant Scanning
+
+Pass `--subscriptions <id1,id2,...>` (or set `AZURE_SUBSCRIPTION_IDS`, comma-separated) to scan an explicit list of subscriptions in one run, instead of a whole Management Group. This is the mode for Azure Lighthouse: once a customer tenant delegates RBAC on a subscription to your managing tenant, the same client-credentials token you already use is authorized against it, no separate login per tenant. Just list the delegated subscription IDs, whichever tenant they actually live in. Reports include the same per-subscription breakdown as a Management Group scan. `--management-group` and `--subscriptions` are mutually exclusive.
 
 ---
 

@@ -15,8 +15,17 @@ use tracing::info;
 struct Cli {
     /// Scan every subscription under this Management Group instead of a
     /// single subscription. Overrides AZURE_SUBSCRIPTION_ID when set.
-    #[arg(long, env = "AZURE_MANAGEMENT_GROUP_ID")]
+    #[arg(long, env = "AZURE_MANAGEMENT_GROUP_ID", conflicts_with = "subscriptions", global = true)]
     management_group: Option<String>,
+
+    /// Scan exactly these subscriptions (comma-separated), instead of a
+    /// single subscription or a whole Management Group. This is how
+    /// Azure Lighthouse multi-tenant scans work: list subscriptions
+    /// delegated from any number of customer tenants, the service
+    /// principal's single client-credentials token already covers all of
+    /// them via the Lighthouse RBAC delegation, no per-tenant login needed.
+    #[arg(long, env = "AZURE_SUBSCRIPTION_IDS", value_delimiter = ',', global = true)]
+    subscriptions: Vec<String>,
 
     #[command(subcommand)]
     command: Command,
@@ -85,14 +94,14 @@ async fn main() -> Result<()> {
     }
 
     let client = AzureClient::from_env()?;
-    let scope = match cli.management_group {
-        Some(mg_id) => Scope::ManagementGroup(mg_id),
-        None => Scope::Subscription(
-            client
-                .subscription_id
-                .clone()
-                .ok_or_else(|| anyhow!("set AZURE_SUBSCRIPTION_ID, or pass --management-group"))?,
-        ),
+    let scope = if let Some(mg_id) = cli.management_group {
+        Scope::ManagementGroup(mg_id)
+    } else if !cli.subscriptions.is_empty() {
+        Scope::Subscriptions(cli.subscriptions)
+    } else {
+        Scope::Subscription(client.subscription_id.clone().ok_or_else(|| {
+            anyhow!("set AZURE_SUBSCRIPTION_ID, or pass --management-group / --subscriptions")
+        })?)
     };
 
     match cli.command {

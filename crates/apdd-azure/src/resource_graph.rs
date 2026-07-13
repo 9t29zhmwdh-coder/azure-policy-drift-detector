@@ -57,6 +57,7 @@ pub async fn query_resources(
     let query = kql.unwrap_or(DEFAULT_KQL);
     let (subscriptions, management_groups): (Vec<&str>, Vec<&str>) = match scope {
         Scope::Subscription(id) => (vec![id.as_str()], vec![]),
+        Scope::Subscriptions(ids) => (ids.iter().map(String::as_str).collect(), vec![]),
         Scope::ManagementGroup(id) => (vec![], vec![id.as_str()]),
     };
     let mut all_resources = vec![];

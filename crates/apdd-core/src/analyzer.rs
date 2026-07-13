@@ -283,6 +283,27 @@ mod tests {
     }
 
     #[test]
+    fn build_report_labels_lighthouse_subscriptions_scope() {
+        // Simulates an Azure Lighthouse multi-tenant scan: subscriptions
+        // delegated from different customer tenants, listed explicitly
+        // rather than resolved from one Management Group.
+        let scope = Scope::Subscriptions(vec!["sub-tenant-a".to_string(), "sub-tenant-b".to_string()]);
+        let resources = vec![
+            AzureResource {
+                id: "/res/a".into(), name: "a".into(), resource_type: "t".into(),
+                location: "l".into(), subscription_id: "sub-tenant-a".into(), tags: Default::default(),
+            },
+            AzureResource {
+                id: "/res/b".into(), name: "b".into(), resource_type: "t".into(),
+                location: "l".into(), subscription_id: "sub-tenant-b".into(), tags: Default::default(),
+            },
+        ];
+        let report = build_report(&scope, &resources, &[]);
+        assert_eq!(report.scope, "subscriptions:sub-tenant-a,sub-tenant-b");
+        assert_eq!(report.by_subscription.len(), 2, "each delegated tenant's subscription gets its own breakdown row");
+    }
+
+    #[test]
     fn subscription_breakdown_splits_by_subscription_and_counts_per_sub() {
         let resources = vec![
             AzureResource {

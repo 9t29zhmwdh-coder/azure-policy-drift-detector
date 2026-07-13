@@ -31,16 +31,38 @@ struct RawPolicyState {
     compliance_state: Option<String>,
 }
 
-pub async fn query_policy_states(client: &AzureClient, scope: &Scope) -> Result<Vec<PolicyState>> {
-    let url = client.management_url(&match scope {
-        Scope::Subscription(id) => format!(
-            "/subscriptions/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
-        ),
-        Scope::ManagementGroup(id) => format!(
-            "/providers/Microsoft.Management/managementGroups/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
-        ),
-    });
+fn subscription_url(id: &str) -> String {
+    format!(
+        "/subscriptions/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
+    )
+}
 
+fn management_group_url(id: &str) -> String {
+    format!(
+        "/providers/Microsoft.Management/managementGroups/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
+    )
+}
+
+pub async fn query_policy_states(client: &AzureClient, scope: &Scope) -> Result<Vec<PolicyState>> {
+    match scope {
+        Scope::Subscription(id) => query_one(client, &subscription_url(id)).await,
+        Scope::ManagementGroup(id) => query_one(client, &management_group_url(id)).await,
+        Scope::Subscriptions(ids) => {
+            // Policy Insights has no batch-of-subscriptions endpoint the
+            // way Resource Graph does (Lighthouse-delegated subscriptions
+            // can span several tenants, but each is still queried one at a
+            // time), so we loop and concatenate.
+            let mut all_states = vec![];
+            for id in ids {
+                all_states.extend(query_one(client, &subscription_url(id)).await?);
+            }
+            Ok(all_states)
+        }
+    }
+}
+
+async fn query_one(client: &AzureClient, path: &str) -> Result<Vec<PolicyState>> {
+    let url = client.management_url(path);
     let body = PolicyQueryBody {
         filter: "complianceState ne 'Compliant'".to_string(),
         top: 1000,
