@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::auth::AzureClient;
-use apdd_core::models::AzureResource;
+use apdd_core::models::{AzureResource, Scope};
 
 const RESOURCE_GRAPH_URL: &str =
     "https://management.azure.com/providers/Microsoft.ResourceGraph/resources?api-version=2021-03-01";
@@ -13,7 +13,12 @@ const DEFAULT_KQL: &str =
 
 #[derive(Debug, Serialize)]
 struct ResourceGraphRequest<'a> {
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     subscriptions: Vec<&'a str>,
+    /// Resource Graph scans every subscription under these management
+    /// groups in one call; no need to enumerate subscriptions ourselves.
+    #[serde(rename = "managementGroups", skip_serializing_if = "Vec::is_empty")]
+    management_groups: Vec<&'a str>,
     query: &'a str,
     options: ResourceGraphOptions,
 }
@@ -47,14 +52,20 @@ struct ResourceGraphColumn {
 pub async fn query_resources(
     client: &AzureClient,
     kql: Option<&str>,
+    scope: &Scope,
 ) -> Result<Vec<AzureResource>> {
     let query = kql.unwrap_or(DEFAULT_KQL);
+    let (subscriptions, management_groups): (Vec<&str>, Vec<&str>) = match scope {
+        Scope::Subscription(id) => (vec![id.as_str()], vec![]),
+        Scope::ManagementGroup(id) => (vec![], vec![id.as_str()]),
+    };
     let mut all_resources = vec![];
     let mut skip = 0u32;
 
     loop {
         let request = ResourceGraphRequest {
-            subscriptions: vec![&client.subscription_id],
+            subscriptions: subscriptions.clone(),
+            management_groups: management_groups.clone(),
             query,
             options: ResourceGraphOptions { top: 1000, skip },
         };

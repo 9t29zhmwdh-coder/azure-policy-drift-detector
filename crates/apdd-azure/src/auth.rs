@@ -15,7 +15,10 @@ struct TokenResponse {
 #[derive(Debug, Clone)]
 pub struct AzureClient {
     pub tenant_id: String,
-    pub subscription_id: String,
+    /// Only required for a single-subscription scan; a Management Group
+    /// scan doesn't need this at all, since the scope comes from
+    /// `--management-group` instead.
+    pub subscription_id: Option<String>,
     client_id: String,
     client_secret: String,
     pub http: reqwest::Client,
@@ -30,8 +33,7 @@ impl AzureClient {
             .map_err(|_| anyhow!("AZURE_CLIENT_ID not set"))?;
         let client_secret = std::env::var("AZURE_CLIENT_SECRET")
             .map_err(|_| anyhow!("AZURE_CLIENT_SECRET not set"))?;
-        let subscription_id = std::env::var("AZURE_SUBSCRIPTION_ID")
-            .map_err(|_| anyhow!("AZURE_SUBSCRIPTION_ID not set"))?;
+        let subscription_id = std::env::var("AZURE_SUBSCRIPTION_ID").ok();
 
         Ok(Self {
             tenant_id,

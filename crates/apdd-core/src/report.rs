@@ -11,13 +11,25 @@ pub fn to_markdown(report: &ComplianceReport) -> String {
 
     md.push_str("# Azure Policy Drift Detection Report\n\n");
     md.push_str(&format!(
-        "**Subscription:** `{}`  \n**Scanned at:** {}  \n**Total resources:** {}  \n**Non-compliant:** {}  \n**Exempt:** {}\n\n",
-        report.subscription_id,
+        "**Scope:** `{}`  \n**Scanned at:** {}  \n**Total resources:** {}  \n**Non-compliant:** {}  \n**Exempt:** {}\n\n",
+        report.scope,
         report.scanned_at.format("%Y-%m-%d %H:%M UTC"),
         report.total_resources,
         report.non_compliant_count,
         report.exempt_count,
     ));
+
+    if report.by_subscription.len() > 1 {
+        md.push_str("---\n\n## By Subscription\n\n");
+        md.push_str("| Subscription | Resources | Non-Compliant | Exempt |\n|---|---|---|---|\n");
+        for sub in &report.by_subscription {
+            md.push_str(&format!(
+                "| `{}` | {} | {} | {} |\n",
+                sub.subscription_id, sub.total_resources, sub.non_compliant_count, sub.exempt_count
+            ));
+        }
+        md.push('\n');
+    }
 
     md.push_str("---\n\n## Summary\n\n");
     md.push_str("| Severity | Count |\n|---|---|\n");
@@ -81,7 +93,7 @@ pub fn to_sarif_stub(report: &ComplianceReport) -> String {
             "tool": {
                 "driver": {
                     "name": "azure-policy-drift-detector",
-                    "version": "0.1.0",
+                    "version": env!("CARGO_PKG_VERSION"),
                     "rules": rules
                 }
             },
@@ -90,4 +102,57 @@ pub fn to_sarif_stub(report: &ComplianceReport) -> String {
     });
 
     serde_json::to_string_pretty(&sarif).unwrap_or_default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::models::{ComplianceSummary, SubscriptionBreakdown};
+
+    fn make_report(by_subscription: Vec<SubscriptionBreakdown>) -> ComplianceReport {
+        ComplianceReport {
+            scope: "management-group:mg-test".to_string(),
+            scanned_at: chrono::Utc::now(),
+            total_resources: 3,
+            compliant_count: 1,
+            non_compliant_count: 1,
+            exempt_count: 1,
+            drifts: vec![],
+            summary: ComplianceSummary::default(),
+            by_subscription,
+        }
+    }
+
+    #[test]
+    fn markdown_shows_breakdown_table_for_multiple_subscriptions() {
+        let report = make_report(vec![
+            SubscriptionBreakdown { subscription_id: "sub-a".into(), total_resources: 2, non_compliant_count: 1, exempt_count: 0 },
+            SubscriptionBreakdown { subscription_id: "sub-b".into(), total_resources: 1, non_compliant_count: 0, exempt_count: 1 },
+        ]);
+        let md = to_markdown(&report);
+        assert!(md.contains("## By Subscription"));
+        assert!(md.contains("sub-a"));
+        assert!(md.contains("sub-b"));
+    }
+
+    #[test]
+    fn markdown_omits_breakdown_table_for_a_single_subscription() {
+        let report = make_report(vec![SubscriptionBreakdown {
+            subscription_id: "sub-a".into(),
+            total_resources: 3,
+            non_compliant_count: 1,
+            exempt_count: 1,
+        }]);
+        let md = to_markdown(&report);
+        assert!(!md.contains("## By Subscription"));
+    }
+
+    #[test]
+    fn json_export_round_trips_the_scope_field() {
+        let report = make_report(vec![]);
+        let json = to_json(&report).unwrap();
+        assert!(json.contains("\"scope\": \"management-group:mg-test\""));
+        let parsed: ComplianceReport = serde_json::from_str(&json).unwrap();
+        assert_eq!(parsed.scope, "management-group:mg-test");
+    }
 }

@@ -3,7 +3,7 @@ use chrono::Utc;
 use serde::{Deserialize, Serialize};
 
 use crate::auth::AzureClient;
-use apdd_core::models::{ComplianceState, PolicyState};
+use apdd_core::models::{ComplianceState, PolicyState, Scope};
 
 #[derive(Debug, Serialize)]
 struct PolicyQueryBody {
@@ -31,11 +31,15 @@ struct RawPolicyState {
     compliance_state: Option<String>,
 }
 
-pub async fn query_policy_states(client: &AzureClient) -> Result<Vec<PolicyState>> {
-    let url = client.management_url(&format!(
-        "/subscriptions/{}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01",
-        client.subscription_id
-    ));
+pub async fn query_policy_states(client: &AzureClient, scope: &Scope) -> Result<Vec<PolicyState>> {
+    let url = client.management_url(&match scope {
+        Scope::Subscription(id) => format!(
+            "/subscriptions/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
+        ),
+        Scope::ManagementGroup(id) => format!(
+            "/providers/Microsoft.Management/managementGroups/{id}/providers/Microsoft.PolicyInsights/policyStates/latest/queryResults?api-version=2019-10-01"
+        ),
+    });
 
     let body = PolicyQueryBody {
         filter: "complianceState ne 'Compliant'".to_string(),

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0] (2026-07-13)
+
+### Added
+
+- Management Group scope: `apdd scan --management-group <id>` (or `AZURE_MANAGEMENT_GROUP_ID`) scans every subscription under a Management Group in one run, instead of one subscription at a time.
+- Per-subscription breakdown on every report (resource count, non-compliant count, exempt count), shown as its own table in Markdown output and included in JSON, so a Management Group scan across many subscriptions stays readable.
+- `AzureClient.subscription_id` is now optional: it's only required for a single-subscription scan, not for a Management Group scan.
+
+### Changed
+
+- `ComplianceReport.subscription_id` renamed to `ComplianceReport.scope`, now `"subscription:<id>"` or `"management-group:<id>"`, since a report can now cover more than one subscription.
+
 ## [0.1.6] (2026-07-12)
 
 ### Added
