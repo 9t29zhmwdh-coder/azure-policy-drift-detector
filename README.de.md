@@ -140,6 +140,33 @@ Die `.env`-Datei ist in `.gitignore` aufgeführt. Zugangsdaten werden nie commit
 
 ---
 
+## GitHub Action Integration
+
+Kopiere `.github/workflows/policy-check-template.yml` in dein Repository und konfiguriere die benötigten Secrets (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_SUBSCRIPTION_ID`). Der Workflow läuft wöchentlich und lädt den Drift-Bericht als Build-Artefakt hoch.
+
+---
+
+## Beispielausgabe
+
+```
+=== Azure Policy Drift Detector ===
+
+Resources scanned: 214  Non-compliant: 8  Exempt: 2  Drift findings: 10
+
++----------+-------------------------------+-------------------+------------------------------------------+
+| Severity | Type                          | Resource          | Policy                                   |
++----------+-------------------------------+-------------------+------------------------------------------+
+| CRITICAL | Non-Compliant Configuration   | vm-prod-001       | Enable network security group on subnet  |
+| HIGH     | Non-Compliant Configuration   | storage-backup    | Require encryption in transit            |
+| MEDIUM   | Tag Mismatch                  | aks-cluster-eu    | Require cost center tag                  |
+| INFO     | Policy Exempt                 | vm-legacy-002     | Audit unmanaged disks                    |
++----------+-------------------------------+-------------------+------------------------------------------+
+
+Summary: 1 Critical, 3 High, 4 Medium, 0 Low
+```
+
+---
+
 ## Voraussetzungen
 
 - Rust 1.78+
