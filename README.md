@@ -6,9 +6,29 @@
 
 [🇩🇪 Deutsche Version](README.de.md)
 
-**Read-only Rust CLI to detect Azure Policy drift across subscriptions, prioritize non-compliant resources and generate remediation reports.**
+**Finds the resources that quietly stopped matching your Azure Policy, and tells you which ones to fix first.**
 
-Azure Policy Drift Detector connects to Azure Resource Graph and Policy Insights using application credentials and compares resource configurations against active policy assignments. Entirely read-only, no data leaves your machine.
+Policy assignments do not stop anyone. Resources drift out of compliance
+through ordinary work, and the portal will show you thousands of non-compliant
+items with no ranking, which is another way of showing you nothing. This reads
+Resource Graph and Policy Insights, compares what exists against what was
+assigned, and sorts the result by how much it matters.
+
+```
+apdd demo                        try it against synthetic data, no credentials
+apdd scan --severity high        what is actually worth your afternoon
+apdd export --format sarif       into your security tooling
+```
+
+Read-only throughout: it holds no write permission and sends nothing anywhere.
+A Management Group or an explicit subscription list works too, including
+Lighthouse delegations across customer tenants on one token. Aligned with the
+[Microsoft Cloud Security Benchmark
+(MCSB)](https://learn.microsoft.com/en-us/security/benchmark/azure/overview).
+
+**Not for you if** you want the drift fixed automatically. This one only
+reports; Azure Policy remediation tasks and deployIfNotExists effects are the
+built-in answer for closing the loop.
 
 Aligned with the [Microsoft Cloud Security Benchmark (MCSB)](https://learn.microsoft.com/en-us/security/benchmark/azure/overview) and designed for Azure Governance and compliance teams.
 
