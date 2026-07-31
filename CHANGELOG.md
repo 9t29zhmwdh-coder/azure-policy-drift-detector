@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.6] - 2026-07-31
+
+### Changed
+
+- Both READMEs now open with why an unranked compliance list is useless and what this does about it, rather than with the tool's own category. `apdd demo` is shown first so the tool can be judged without Azure credentials, and a short paragraph points people who want drift fixed automatically at Azure Policy remediation tasks instead.
+
+---
+
 ## [1.0.5] - 2026-07-29
 
 ### Security
