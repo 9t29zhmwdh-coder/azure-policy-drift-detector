@@ -305,3 +305,52 @@ fn truncate(s: &str, max: usize) -> String {
         format!("{}...", &s[..max.saturating_sub(3)])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Haelt die gerenderte Tabelle fest, damit ein Versionssprung von `tabled`
+    /// das Ausgabeformat nicht unbemerkt verschiebt. Die Ausgabe ist das
+    /// Produkt dieses Programms: aendert sich Rahmen oder Spaltenbreite, sieht
+    /// das jeder Nutzer, ein Compiler dagegen nie.
+    #[test]
+    fn drift_tabelle_bleibt_im_format() {
+        let zeilen = vec![DriftRow {
+            severity: "High".into(),
+            drift_type: "Modified".into(),
+            resource: "vm-prod-01".into(),
+            policy: "require-tags".into(),
+        }];
+
+        let erwartet = concat!(
+            "+----------+----------+------------+--------------+\n",
+            "| Severity | Type     | Resource   | Policy       |\n",
+            "+----------+----------+------------+--------------+\n",
+            "| High     | Modified | vm-prod-01 | require-tags |\n",
+            "+----------+----------+------------+--------------+",
+        );
+
+        assert_eq!(Table::new(zeilen).to_string(), erwartet);
+    }
+
+    #[test]
+    fn subscription_tabelle_bleibt_im_format() {
+        let zeilen = vec![SubscriptionRow {
+            subscription: "prod".into(),
+            resources: 42,
+            non_compliant: 3,
+            exempt: 1,
+        }];
+
+        let erwartet = concat!(
+            "+--------------+-----------+---------------+--------+\n",
+            "| Subscription | Resources | Non-Compliant | Exempt |\n",
+            "+--------------+-----------+---------------+--------+\n",
+            "| prod         | 42        | 3             | 1      |\n",
+            "+--------------+-----------+---------------+--------+",
+        );
+
+        assert_eq!(Table::new(zeilen).to_string(), erwartet);
+    }
+}
