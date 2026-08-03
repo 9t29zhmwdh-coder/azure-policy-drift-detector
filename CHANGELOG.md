@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.0.9] - 2026-08-03
+
+### Changed
+
+- `tabled` 0.15 to 0.21. The derive attributes and `Table::new` are unchanged across the jump, and the rendered output is identical.
+- `github/codeql-action` 4.37.3 to 4.37.4 and `actions/attest` 4.2.0 to 4.2.1, merged separately. All pinned SHAs were checked against the tags their comments name, since Dependabot raises the SHA and leaves the comment behind.
+
+### Added
+
+- Two tests that hold the exact rendered table for both table types. The output of this program is a table, so a version bump that shifts a border character or a column width is visible to every user and to no compiler. The tests were written and made to pass under 0.15 first, then run unchanged under 0.21.
+
+### Removed
+
+- `thiserror`. Dependabot proposed raising it from 1.0.69 to 2.0.18, but the crate is not used anywhere here: no `derive(Error)`, no `#[error]`, no `#[from]`, not one reference in any of the twelve Rust files. Error handling goes through `anyhow`. Removed rather than raised.
+
+---
+
 ## [1.0.8] - 2026-07-31
 
 ### Fixed
