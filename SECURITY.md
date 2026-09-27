@@ -3,15 +3,25 @@
 ## Supported Versions
 
 | Version | Supported |
-|---|---|
-| 1.0.x | Yes |
-| < 1.0 | No |
+|---------|-----------|
+| Latest  | ✅ Yes    |
+| Older   | ❌ No     |
+
+Security fixes are only applied to the latest release.
 
 ## Reporting a Vulnerability
 
-Open a GitHub issue with the label `security`. Do not include subscription IDs, credentials, or resource data in the report.
+**Do NOT open a public GitHub issue for security vulnerabilities.**
 
-I will acknowledge receipt within 72 hours and aim to provide a fix within 14 days for confirmed vulnerabilities.
+Instead, report it privately via [GitHub Security Advisory](https://github.com/9t29zhmwdh-coder/azure-policy-drift-detector/security/advisories/new) or contact the maintainer via the GitHub profile.
+
+Include:
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix (if any)
+
+A response within **48 hours** is the target, and the issue will be worked on promptly.
 
 ## Security Design Principles
 
