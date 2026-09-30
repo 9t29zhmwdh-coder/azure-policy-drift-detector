@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.12] - 2026-09-30
+
+### Changed
+
+Dependency and CI updates merged since v1.0.11, each with green checks:
+
+- chore(deps): bump clap from 4.6.6 to 4.6.7 in the cargo group (#45)
+
+---
+
 ## [1.0.11] - 2026-09-27
 
 ### Changed
