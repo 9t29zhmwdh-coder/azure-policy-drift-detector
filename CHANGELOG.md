@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.15] - 2026-10-12
+
+### Changed
+
+Dependency and CI updates merged since v1.0.14, each with green checks:
+
+- chore(deps): bump tokio from 1.53.1 to 1.53.2 in the cargo group (#49)
+- chore(ci): bump the actions group with 5 updates (#50)
+
+---
+
 ## [1.0.14] - 2026-10-11
 
 ### Fixed
